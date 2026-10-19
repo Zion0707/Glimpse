@@ -34,9 +34,63 @@ new ResizeObserver(()=>{if(mode==='fit')fit();}).observe(canvas);
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='o'){e.preventDefault();open(e.shiftKey);return;}if(e.target instanceof HTMLInputElement)return; const key=e.key.toLowerCase();const actions={'arrowleft':'prev','arrowright':'next','+':'zoom-in','=':'zoom-in','-':'zoom-out','0':'fit','1':'actual','r':'rotate','h':'flip','f':'fullscreen'};if(actions[key]){e.preventDefault();$(actions[key]).click();}if(key==='/'){e.preventDefault();$('search').focus();}});
 let dragDepth=0;document.addEventListener('dragenter',e=>{e.preventDefault();dragDepth++;$('drop-overlay').hidden=false;});document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('dragleave',()=>{if(--dragDepth<=0){dragDepth=0;$('drop-overlay').hidden=true;}});document.addEventListener('drop',async e=>{e.preventDefault();dragDepth=0;$('drop-overlay').hidden=true;const file=e.dataTransfer.files[0];if(!file)return;try{if(window.viewer)load(await window.viewer.drop(file));}catch(error){toast(`无法打开：${error.message}`);}});
 window.viewer?.onOpen(load);controls();
+let refreshing = false;
+const refreshButton = document.createElement('button');
+refreshButton.id = 'refresh';
+refreshButton.className = 'icon-button';
+refreshButton.title = '刷新图片列表';
+refreshButton.setAttribute('aria-label', '刷新图片列表');
+refreshButton.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths.rotate}"/></svg>`;
+$('sort').before(refreshButton);
+refreshButton.disabled = true;
+const listActions = document.createElement('div');
+listActions.className = 'list-actions';
+refreshButton.before(listActions);
+listActions.append(refreshButton, $('sort'));
+window.viewer?.onOpen(() => { refreshButton.disabled = false; });
+new MutationObserver(() => { refreshButton.disabled = !$('folder-name').title; }).observe($('folder-name'), { attributes: true });
+refreshButton.onclick = async () => {
+  if (deleting || refreshing) return;
+  refreshing = true;
+  refreshButton.disabled = true;
+  refreshButton.classList.add('refreshing');
+  const selectedPath = files[index]?.path;
+  const query = $('search').value;
+  try {
+    const data = await window.viewer.refresh();
+    if (!data) return;
+    data.selected = Math.max(0, data.files.findIndex(file => file.path === selectedPath));
+    load(data);
+    $('search').value = query;
+    renderList();
+    toast(`列表已刷新，共 ${files.length} 张图片`);
+  } catch (error) { toast(`刷新失败：${error.message}`); }
+  finally { refreshing = false; refreshButton.disabled = false; refreshButton.classList.remove('refreshing'); }
+};
+const closeDialog = document.createElement('dialog');
+closeDialog.id = 'close-dialog';
+closeDialog.setAttribute('aria-labelledby', 'close-title');
+closeDialog.setAttribute('aria-describedby', 'close-description');
+closeDialog.innerHTML = `<div class="close-heading"><img src="assets/icon.png" alt=""><span>GLIMPSE</span><button class="icon-button" id="close-cancel-icon" aria-label="取消关闭" title="取消关闭">×</button></div><h2 id="close-title">暂时离开 Glimpse？</h2><p id="close-description">保留在托盘，下次继续浏览。也可以直接退出应用。</p><div class="close-actions"><button class="button subtle" id="close-cancel">取消</button><button class="button subtle" id="close-quit">直接退出</button><button class="button primary" id="close-tray" autofocus>最小化到托盘</button></div>`;
+document.body.append(closeDialog);
+let previousFocus;
+function closeChoice(choice) {
+  closeDialog.close();
+  previousFocus?.focus();
+  window.viewer?.closeChoice(choice);
+}
+window.viewer?.onClose(() => {
+  if (closeDialog.open) return;
+  previousFocus = document.activeElement;
+  closeDialog.showModal();
+});
+$('close-cancel').onclick = $('close-cancel-icon').onclick = () => closeChoice('cancel');
+$('close-quit').onclick = () => closeChoice('quit');
+$('close-tray').onclick = () => closeChoice('tray');
+closeDialog.addEventListener('cancel', event => { event.preventDefault(); closeChoice('cancel'); });
 let deleting = false;
 async function trash(file, button) {
-  if (deleting) return;
+  if (deleting || refreshing) return;
   deleting = true;
   button.disabled = true;
   try {

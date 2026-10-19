@@ -7,6 +7,7 @@ let win;
 let tray;
 let quitting = false;
 let closePromptOpen = false;
+let currentFolder;
 const iconPath = path.join(__dirname, '../src/assets/icon.ico');
 function showWindow() {
   if (!win || win.isDestroyed()) return;
@@ -36,6 +37,7 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'preview', privileges: { standar
 async function collection(input) {
   const stat = await fs.stat(input);
   const dir = stat.isDirectory() ? input : path.dirname(input);
+  currentFolder = dir;
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = await Promise.all(entries.filter(e => e.isFile() && supported.test(e.name)).sort((a,b) => a.name.localeCompare(b.name, undefined, { numeric: true })).map(async e => {
     const absolute = path.join(dir, e.name);
@@ -60,23 +62,12 @@ else {
       return net.fetch(pathToFileURL(file).href);
     });
     win = new BrowserWindow({ width: 1380, height: 900, minWidth: 850, minHeight: 600, backgroundColor: '#151719', title: 'Glimpse', icon: iconPath, autoHideMenuBar: true, webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
-    win.on('close', async event => {
+    win.on('close', event => {
       if (quitting) return;
       event.preventDefault();
       if (closePromptOpen) return;
       closePromptOpen = true;
-      try {
-        const { response } = await dialog.showMessageBox(win, {
-          type: 'question', title: '关闭 Glimpse',
-          message: '你希望如何关闭 Glimpse？',
-          detail: '最小化到托盘后，应用将在后台运行，可点击托盘图标重新打开。',
-          buttons: ['最小化到托盘', '直接退出', '取消'],
-          defaultId: 0, cancelId: 2, noLink: true
-        });
-        if (quitting || win.isDestroyed()) return;
-        if (response === 0) minimizeToTray();
-        else if (response === 1) app.quit();
-      } finally { closePromptOpen = false; }
+      win.webContents.send('confirm-close');
     });
     win.loadFile(path.join(__dirname, '../src/index.html'));
     win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -89,6 +80,13 @@ ipcMain.handle('open', async (_, folder) => {
   return result.canceled ? null : collection(result.filePaths[0]);
 });
 ipcMain.handle('drop', (_, file) => collection(file));
+ipcMain.handle('refresh', () => currentFolder ? collection(currentFolder) : null);
+ipcMain.handle('close-choice', (_, choice) => {
+  if (!closePromptOpen) return;
+  closePromptOpen = false;
+  if (choice === 'tray') minimizeToTray();
+  else if (choice === 'quit') app.quit();
+});
 ipcMain.handle('trash', async (_, file) => {
   if (typeof file !== 'string' || !allowed.has(file)) throw new Error('只能删除已打开的图片');
   await shell.trashItem(file);
