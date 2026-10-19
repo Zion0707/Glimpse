@@ -1,18 +1,244 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' preview: blob: data:; style-src 'self'; script-src 'self'">
-  <title>Glimpse · 图片预览</title><link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="workspace">
-    <aside class="sidebar"><div class="sidebar-heading"><span>图片库</span><span id="count" class="count">0</span></div><div class="folder-label"><span data-icon="folder"></span><span id="folder-name">尚未打开文件夹</span></div><div class="search"><span data-icon="search"></span><input id="search" placeholder="搜索图片..." aria-label="搜索图片"><kbd>/</kbd></div><div class="list-label"><span>文件名</span><button id="sort" class="icon-button" title="切换排序方向" aria-label="切换排序方向"><span data-icon="sort"></span></button></div><div id="file-list" class="file-list"><div class="empty-library">打开图片，开始浏览</div></div><div class="sidebar-bottom"><span data-icon="image"></span><span id="library-size">你的图片，只在本地</span></div></aside>
-    <div id="sidebar-resizer" role="separator" aria-label="调整侧边栏宽度" aria-orientation="vertical" aria-valuemin="180" aria-valuemax="420" aria-valuenow="239" tabindex="0"></div>
-    <main><header class="topbar"><div class="header-actions"><span class="local-badge"><i></i>本地 · 离线</span><button id="open-folder" class="button subtle"><span data-icon="folder"></span>打开文件夹</button><button id="open-file" class="button primary"><span data-icon="plus"></span>打开图片</button></div></header><div class="viewer-heading"><div class="file-title"><span data-icon="image"></span><strong id="filename">图片预览</strong><span id="filetype" class="tag">READY</span></div><div class="view-actions"><button id="info-toggle" class="icon-button active" title="图片信息" aria-label="图片信息"><span data-icon="info"></span></button><button id="fullscreen" class="icon-button" title="全屏 F" aria-label="全屏"><span data-icon="expand"></span></button></div></div>
-      <div id="canvas" class="canvas"><div class="canvas-grid"></div><img id="main-image" alt="" draggable="false" hidden><div id="welcome" class="welcome"><div class="welcome-mark"><span data-icon="image"></span><span class="small-plus">+</span></div><p class="eyebrow">A LITTLE SPACE FOR YOUR IMAGES</p><h1>每一张，都值得好好看。</h1><p class="welcome-copy">将图片拖到这里，或打开一个文件夹</p><button id="welcome-open" class="button primary"><span data-icon="folder"></span>选择图片<span class="key-hint">Ctrl O</span></button><div class="formats">PNG <b>·</b> JPG <b>·</b> WEBP <b>·</b> GIF <b>·</b> SVG <b>·</b> AVIF</div></div><div id="drop-overlay" class="drop-overlay" hidden>松开以打开图片</div><button id="prev" class="nav-arrow previous" title="上一张 ←" aria-label="上一张"><span data-icon="left"></span></button><button id="next" class="nav-arrow next" title="下一张 →" aria-label="下一张"><span data-icon="right"></span></button><div id="image-error" class="image-error" hidden>无法解码这张图片，请尝试其他文件。</div><div class="floating-toolbar"><button id="zoom-out" class="icon-button" title="缩小 −" aria-label="缩小"><span data-icon="minus"></span></button><button id="zoom-level" class="zoom-level" title="恢复适应窗口">100%</button><button id="zoom-in" class="icon-button" title="放大 +" aria-label="放大"><span data-icon="plus"></span></button><span class="divider"></span><button id="fit" class="icon-button active" title="适应窗口 0" aria-label="适应窗口"><span data-icon="fit"></span></button><button id="actual" class="text-tool" title="原始尺寸 1">1:1</button><span class="divider"></span><button id="rotate" class="icon-button" title="旋转 R" aria-label="旋转"><span data-icon="rotate"></span></button><button id="flip" class="icon-button" title="水平翻转 H" aria-label="水平翻转"><span data-icon="flip"></span></button><span class="divider"></span><button id="background" class="icon-button" title="切换背景" aria-label="切换背景"><span data-icon="sun"></span></button></div></div>
-      <section id="metadata" class="metadata"><div><span class="meta-label">图片尺寸</span><span id="dimensions">—</span></div><div><span class="meta-label">文件大小</span><span id="filesize">—</span></div><div><span class="meta-label">图片格式</span><span id="format">—</span></div><div><span class="meta-label">修改时间</span><span id="modified">—</span></div><span class="metadata-note"><i></i>原图呈现</span></section>
-    </main>
-  </div><footer><span><i></i><span id="status">准备就绪</span><span id="position"></span></span><span>滚轮缩放<span class="footer-dot">·</span>拖动平移<span class="footer-dot">·</span>← → 切换图片</span><span>GLIMPSE <span class="version">1.0</span></span></footer><div id="toast" role="status" hidden></div>
-  <script src="app.js"></script>
-</body></html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; img-src 'self' preview: blob: data:; style-src 'self'; script-src 'self'"
+        />
+        <title>Glimpse · 图片预览</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="workspace">
+            <aside class="sidebar">
+                <div class="sidebar-heading">
+                    <span>图片库</span><span id="count" class="count">0</span>
+                </div>
+                <div class="folder-label">
+                    <span data-icon="folder"></span
+                    ><span id="folder-name">尚未打开文件夹</span>
+                </div>
+                <div class="search">
+                    <span data-icon="search"></span
+                    ><input
+                        id="search"
+                        placeholder="搜索图片..."
+                        aria-label="搜索图片"
+                    /><kbd>/</kbd>
+                </div>
+                <div class="list-label">
+                    <span>文件名</span
+                    ><button
+                        id="sort"
+                        class="icon-button"
+                        title="切换排序方向"
+                        aria-label="切换排序方向"
+                    >
+                        <span data-icon="sort"></span>
+                    </button>
+                </div>
+                <div id="file-list" class="file-list">
+                    <div class="empty-library">打开图片，开始浏览</div>
+                </div>
+                <div class="sidebar-bottom">
+                    <span data-icon="image"></span
+                    ><span id="library-size">你的图片，只在本地</span>
+                </div>
+            </aside>
+            <div
+                id="sidebar-resizer"
+                role="separator"
+                aria-label="调整侧边栏宽度"
+                aria-orientation="vertical"
+                aria-valuemin="180"
+                aria-valuemax="420"
+                aria-valuenow="239"
+                tabindex="0"
+            ></div>
+            <main>
+                <header class="topbar">
+                    <div class="header-actions">
+                        <span class="local-badge"><i></i>本地 · 离线</span
+                        ><button id="open-folder" class="button subtle">
+                            <span data-icon="folder"></span>打开文件夹</button
+                        ><button id="open-file" class="button primary">
+                            <span data-icon="plus"></span>打开图片
+                        </button>
+                    </div>
+                </header>
+                <div class="viewer-heading">
+                    <div class="file-title">
+                        <span data-icon="image"></span
+                        ><strong id="filename">图片预览</strong
+                        ><span id="filetype" class="tag">READY</span>
+                    </div>
+                    <div class="view-actions">
+                        <button
+                            id="info-toggle"
+                            class="icon-button active"
+                            title="图片信息"
+                            aria-label="图片信息"
+                        >
+                            <span data-icon="info"></span></button
+                        ><button
+                            id="fullscreen"
+                            class="icon-button"
+                            title="全屏 F"
+                            aria-label="全屏"
+                        >
+                            <span data-icon="expand"></span>
+                        </button>
+                        <button
+                            id="image-fullscreen"
+                            class="icon-button"
+                            title="图片全屏"
+                            aria-label="图片全屏"
+                        >
+                            <span data-icon="image"></span>
+                        </button>
+                    </div>
+                </div>
+                <div id="canvas" class="canvas">
+                    <div class="canvas-grid"></div>
+                    <img id="main-image" alt="" draggable="false" hidden />
+                    <div id="welcome" class="welcome">
+                        <div class="welcome-mark">
+                            <span data-icon="image"></span
+                            ><span class="small-plus">+</span>
+                        </div>
+                        <p class="eyebrow">A LITTLE SPACE FOR YOUR IMAGES</p>
+                        <h1>每一张，都值得好好看。</h1>
+                        <p class="welcome-copy">
+                            将图片拖到这里，或打开一个文件夹
+                        </p>
+                        <button id="welcome-open" class="button primary">
+                            <span data-icon="folder"></span>选择图片<span
+                                class="key-hint"
+                                >Ctrl O</span
+                            >
+                        </button>
+                        <div class="formats">
+                            PNG <b>·</b> JPG <b>·</b> WEBP <b>·</b> GIF
+                            <b>·</b> SVG <b>·</b> AVIF
+                        </div>
+                    </div>
+                    <div id="drop-overlay" class="drop-overlay" hidden>
+                        松开以打开图片
+                    </div>
+                    <button
+                        id="prev"
+                        class="nav-arrow previous"
+                        title="上一张 ←"
+                        aria-label="上一张"
+                    >
+                        <span data-icon="left"></span></button
+                    ><button
+                        id="next"
+                        class="nav-arrow next"
+                        title="下一张 →"
+                        aria-label="下一张"
+                    >
+                        <span data-icon="right"></span>
+                    </button>
+                    <div id="image-error" class="image-error" hidden>
+                        无法解码这张图片，请尝试其他文件。
+                    </div>
+                    <div class="floating-toolbar">
+                        <button
+                            id="zoom-out"
+                            class="icon-button"
+                            title="缩小 −"
+                            aria-label="缩小"
+                        >
+                            <span data-icon="minus"></span></button
+                        ><button
+                            id="zoom-level"
+                            class="zoom-level"
+                            title="恢复适应窗口"
+                        >
+                            100%</button
+                        ><button
+                            id="zoom-in"
+                            class="icon-button"
+                            title="放大 +"
+                            aria-label="放大"
+                        >
+                            <span data-icon="plus"></span></button
+                        ><span class="divider"></span
+                        ><button
+                            id="fit"
+                            class="icon-button active"
+                            title="适应窗口 0"
+                            aria-label="适应窗口"
+                        >
+                            <span data-icon="fit"></span></button
+                        ><button
+                            id="actual"
+                            class="text-tool"
+                            title="原始尺寸 1"
+                        >
+                            1:1</button
+                        ><span class="divider"></span
+                        ><button
+                            id="rotate"
+                            class="icon-button"
+                            title="旋转 R"
+                            aria-label="旋转"
+                        >
+                            <span data-icon="rotate"></span></button
+                        ><button
+                            id="flip"
+                            class="icon-button"
+                            title="水平翻转 H"
+                            aria-label="水平翻转"
+                        >
+                            <span data-icon="flip"></span></button
+                        ><span class="divider"></span
+                        ><button
+                            id="background"
+                            class="icon-button"
+                            title="切换背景"
+                            aria-label="切换背景"
+                        >
+                            <span data-icon="sun"></span>
+                        </button>
+                    </div>
+                </div>
+                <section id="metadata" class="metadata">
+                    <div>
+                        <span class="meta-label">图片尺寸</span
+                        ><span id="dimensions">—</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">文件大小</span
+                        ><span id="filesize">—</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">图片格式</span
+                        ><span id="format">—</span>
+                    </div>
+                    <div>
+                        <span class="meta-label">修改时间</span
+                        ><span id="modified">—</span>
+                    </div>
+                    <span class="metadata-note"><i></i>原图呈现</span>
+                </section>
+            </main>
+        </div>
+        <footer>
+            <span
+                ><i></i><span id="status">准备就绪</span
+                ><span id="position"></span></span
+            ><span
+                >滚轮缩放<span class="footer-dot">·</span>拖动平移<span
+                    class="footer-dot"
+                    >·</span
+                >← → 切换图片</span
+            ><span>GLIMPSE <span class="version">1.0</span></span>
+        </footer>
+        <div id="toast" role="status" hidden></div>
+        <script src="app.js"></script>
+    </body>
+</html>

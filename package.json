@@ -1,30 +1,83 @@
 {
-  "name": "glimpse-image-preview",
-  "version": "1.0.0",
-  "description": "Lightweight Windows image viewer",
-  "main": "electron/main.cjs",
-  "author": "Glimpse",
-  "license": "MIT",
-  "scripts": {
-    "start": "electron .",
-    "dev": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js",
-    "test": "node tests/smoke.cjs",
-    "dist": "electron-builder --win nsis portable"
-  },
-  "devDependencies": {
-    "electron": "^38.0.0",
-    "electron-builder": "^26.0.12",
-    "@playwright/test": "^1.56.0"
-  },
-  "build": {
-    "electronDist": "node_modules/electron/dist",
-    "appId": "com.glimpse.viewer",
-    "productName": "Glimpse",
-    "directories": { "output": "release" },
-    "files": ["electron/**/*", "src/**/*", "package.json"],
-    "win": { "icon": "src/assets/icon.ico", "target": ["nsis", "portable"] },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true },
-    "fileAssociations": [{ "ext": ["png", "jpg", "jpeg", "webp", "gif", "bmp", "svg", "avif"], "name": "Image", "role": "Viewer" }]
-  }
+    "name": "glimpse-image-preview",
+    "version": "1.0.0",
+    "description": "Lightweight Windows image viewer",
+    "main": "dist/electron/main.cjs",
+    "author": "Glimpse",
+    "license": "MIT",
+    "type": "module",
+    "engines": {
+        "node": "^22.13.0 || >=24"
+    },
+    "scripts": {
+        "build": "node --experimental-strip-types scripts/build.ts",
+        "start": "npm run build && electron .",
+        "dev": "npm start",
+        "typecheck": "tsc --noEmit",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "lint": "eslint . && stylelint src/**/*.less",
+        "lint:fix": "eslint . --fix && stylelint src/**/*.less --fix",
+        "check": "npm run typecheck && npm run lint && npm run format:check && npm run build",
+        "test": "npm run build && node tests/smoke.cjs",
+        "dist": "npm run build && electron-builder --win nsis portable"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.5",
+        "@playwright/test": "^1.56.0",
+        "@types/less": "^3.0.8",
+        "@types/node": "^26.6.5",
+        "electron": "^38.0.0",
+        "electron-builder": "^26.0.12",
+        "esbuild": "^0.28.2",
+        "eslint": "^9.39.4",
+        "eslint-config-prettier": "^10.1.8",
+        "less": "^4.9.1",
+        "postcss-less": "^6.0.0",
+        "prettier": "^3.9.10",
+        "stylelint": "^17.16.0",
+        "stylelint-config-standard-less": "^4.1.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.71.2"
+    },
+    "build": {
+        "electronDist": "node_modules/electron/dist",
+        "appId": "com.glimpse.viewer",
+        "productName": "Glimpse",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "dist/**/*",
+            "package.json"
+        ],
+        "win": {
+            "icon": "src/assets/icon.ico",
+            "target": [
+                "nsis",
+                "portable"
+            ]
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true
+        },
+        "fileAssociations": [
+            {
+                "ext": [
+                    "png",
+                    "jpg",
+                    "jpeg",
+                    "webp",
+                    "gif",
+                    "bmp",
+                    "svg",
+                    "avif"
+                ],
+                "name": "Image",
+                "role": "Viewer"
+            }
+        ]
+    }
 }
