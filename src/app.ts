@@ -305,6 +305,9 @@ document.addEventListener('fullscreenchange', () => {
     mode = 'fit';
     fit();
 });
+$('exit-image-fullscreen').onclick = async () => {
+    if (document.fullscreenElement === canvas) await document.exitFullscreen();
+};
 canvas.addEventListener(
     'wheel',
     (e) => {

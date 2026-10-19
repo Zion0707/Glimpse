@@ -1,15 +1,68 @@
 @accent: #b8e78d;
 
+.fullscreen-top {
+    display: none;
+}
+
+.fullscreen-bottom {
+    display: contents;
+}
+
 .canvas:fullscreen {
     width: 100vw;
     height: 100vh;
     background: #101212;
 
     .canvas-grid,
-    .floating-toolbar,
     .nav-arrow,
     .welcome {
         display: none;
+    }
+
+    .fullscreen-top,
+    .fullscreen-bottom {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        z-index: 4;
+    }
+
+    .fullscreen-top {
+        top: 0;
+        height: 80px;
+
+        .icon-button {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #25292bf5;
+            border: 1px solid #49514c;
+            box-shadow: 0 6px 20px #0003;
+        }
+    }
+
+    .fullscreen-bottom {
+        bottom: 0;
+        height: 104px;
+    }
+
+    .fullscreen-top .icon-button,
+    .floating-toolbar {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.18s ease;
+    }
+
+    .fullscreen-top:hover .icon-button,
+    .fullscreen-top:has(:focus-visible) .icon-button,
+    .fullscreen-bottom:hover .floating-toolbar,
+    .fullscreen-bottom:has(:focus-visible) .floating-toolbar {
+        opacity: 1;
+        pointer-events: auto;
     }
 }
 

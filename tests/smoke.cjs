@@ -59,9 +59,21 @@ const os = require('node:os');
                 document.getElementById('canvas').clientWidth === innerWidth &&
                 document.getElementById('canvas').clientHeight === innerHeight,
         );
+        const viewport = await page.evaluate(() => ({
+            width: innerWidth,
+            height: innerHeight,
+        }));
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
+        const toolbar = page.locator('.floating-toolbar');
+        const exitFullscreen = page.locator('#exit-image-fullscreen');
+        await page.waitForFunction(
+            () =>
+                getComputedStyle(document.querySelector('.floating-toolbar'))
+                    .opacity === '0',
+        );
         assert.equal(
-            await page.locator('.floating-toolbar').isVisible(),
-            false,
+            await exitFullscreen.evaluate((el) => getComputedStyle(el).opacity),
+            '0',
         );
         assert.equal(await page.locator('#main-image').isVisible(), true);
         await fs.mkdir(path.join(__dirname, '../artifacts'), {
@@ -70,9 +82,57 @@ const os = require('node:os');
         await page.screenshot({
             path: path.join(__dirname, '../artifacts/image-fullscreen.png'),
         });
+        await page.mouse.move(viewport.width / 2, viewport.height - 10);
+        await page.waitForFunction(
+            () =>
+                getComputedStyle(document.querySelector('.floating-toolbar'))
+                    .opacity === '1',
+        );
+        await page.locator('#actual').click();
+        await page.locator('#zoom-in').click();
+        assert.equal(await page.locator('#zoom-level').textContent(), '120%');
+        await page.locator('#rotate').click();
+        assert.match(
+            await page.locator('#main-image').getAttribute('style'),
+            /rotate\(90deg\)/,
+        );
+        await page.locator('#flip').click();
+        assert.match(
+            await page.locator('#main-image').getAttribute('style'),
+            /scale\(-1.2,\s*1.2\)/,
+        );
+        await page.locator('#fit').click();
+        await page.screenshot({
+            path: path.join(__dirname, '../artifacts/fullscreen-toolbar.png'),
+        });
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
+        await page.waitForFunction(
+            () =>
+                getComputedStyle(document.querySelector('.floating-toolbar'))
+                    .opacity === '0',
+        );
+        await page.mouse.move(viewport.width / 2, 10);
+        await page.waitForFunction(
+            () =>
+                getComputedStyle(
+                    document.getElementById('exit-image-fullscreen'),
+                ).opacity === '1',
+        );
+        await page.screenshot({
+            path: path.join(__dirname, '../artifacts/fullscreen-close.png'),
+        });
+        await exitFullscreen.click();
+        await page.waitForFunction(() => !document.fullscreenElement);
+        assert.equal(await toolbar.isVisible(), true);
+        assert.equal(await exitFullscreen.isVisible(), false);
+        await page.locator('#image-fullscreen').click();
+        await page.waitForFunction(
+            () => document.fullscreenElement?.id === 'canvas',
+        );
         await page.keyboard.press('Escape');
         await page.waitForFunction(() => !document.fullscreenElement);
         assert.equal(await page.locator('.floating-toolbar').isVisible(), true);
+        await page.locator('.file-open').first().click();
         await page.locator('#actual').click();
         assert.equal(await page.locator('#zoom-level').textContent(), '100%');
         await page.locator('#zoom-in').click();

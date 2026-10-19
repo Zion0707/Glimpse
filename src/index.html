@@ -145,65 +145,79 @@
                     <div id="image-error" class="image-error" hidden>
                         无法解码这张图片，请尝试其他文件。
                     </div>
-                    <div class="floating-toolbar">
+                    <div class="fullscreen-top">
                         <button
-                            id="zoom-out"
+                            id="exit-image-fullscreen"
                             class="icon-button"
-                            title="缩小 −"
-                            aria-label="缩小"
+                            title="退出图片全屏 Esc"
+                            aria-label="退出图片全屏"
                         >
-                            <span data-icon="minus"></span></button
-                        ><button
-                            id="zoom-level"
-                            class="zoom-level"
-                            title="恢复适应窗口"
-                        >
-                            100%</button
-                        ><button
-                            id="zoom-in"
-                            class="icon-button"
-                            title="放大 +"
-                            aria-label="放大"
-                        >
-                            <span data-icon="plus"></span></button
-                        ><span class="divider"></span
-                        ><button
-                            id="fit"
-                            class="icon-button active"
-                            title="适应窗口 0"
-                            aria-label="适应窗口"
-                        >
-                            <span data-icon="fit"></span></button
-                        ><button
-                            id="actual"
-                            class="text-tool"
-                            title="原始尺寸 1"
-                        >
-                            1:1</button
-                        ><span class="divider"></span
-                        ><button
-                            id="rotate"
-                            class="icon-button"
-                            title="旋转 R"
-                            aria-label="旋转"
-                        >
-                            <span data-icon="rotate"></span></button
-                        ><button
-                            id="flip"
-                            class="icon-button"
-                            title="水平翻转 H"
-                            aria-label="水平翻转"
-                        >
-                            <span data-icon="flip"></span></button
-                        ><span class="divider"></span
-                        ><button
-                            id="background"
-                            class="icon-button"
-                            title="切换背景"
-                            aria-label="切换背景"
-                        >
-                            <span data-icon="sun"></span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 6l12 12 M18 6L6 18" />
+                            </svg>
                         </button>
+                    </div>
+                    <div class="fullscreen-bottom">
+                        <div class="floating-toolbar">
+                            <button
+                                id="zoom-out"
+                                class="icon-button"
+                                title="缩小 −"
+                                aria-label="缩小"
+                            >
+                                <span data-icon="minus"></span></button
+                            ><button
+                                id="zoom-level"
+                                class="zoom-level"
+                                title="恢复适应窗口"
+                            >
+                                100%</button
+                            ><button
+                                id="zoom-in"
+                                class="icon-button"
+                                title="放大 +"
+                                aria-label="放大"
+                            >
+                                <span data-icon="plus"></span></button
+                            ><span class="divider"></span
+                            ><button
+                                id="fit"
+                                class="icon-button active"
+                                title="适应窗口 0"
+                                aria-label="适应窗口"
+                            >
+                                <span data-icon="fit"></span></button
+                            ><button
+                                id="actual"
+                                class="text-tool"
+                                title="原始尺寸 1"
+                            >
+                                1:1</button
+                            ><span class="divider"></span
+                            ><button
+                                id="rotate"
+                                class="icon-button"
+                                title="旋转 R"
+                                aria-label="旋转"
+                            >
+                                <span data-icon="rotate"></span></button
+                            ><button
+                                id="flip"
+                                class="icon-button"
+                                title="水平翻转 H"
+                                aria-label="水平翻转"
+                            >
+                                <span data-icon="flip"></span></button
+                            ><span class="divider"></span
+                            ><button
+                                id="background"
+                                class="icon-button"
+                                title="切换背景"
+                                aria-label="切换背景"
+                            >
+                                <span data-icon="sun"></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <section id="metadata" class="metadata">
