@@ -1,0 +1,30 @@
+{
+  "name": "glimpse-image-preview",
+  "version": "1.0.0",
+  "description": "Lightweight Windows image viewer",
+  "main": "electron/main.cjs",
+  "author": "Glimpse",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js",
+    "test": "node tests/smoke.cjs",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12",
+    "@playwright/test": "^1.56.0"
+  },
+  "build": {
+    "electronDist": "node_modules/electron/dist",
+    "appId": "com.glimpse.viewer",
+    "productName": "Glimpse",
+    "directories": { "output": "release" },
+    "files": ["electron/**/*", "src/**/*", "package.json"],
+    "win": { "icon": "src/assets/icon.ico", "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true },
+    "fileAssociations": [{ "ext": ["png", "jpg", "jpeg", "webp", "gif", "bmp", "svg", "avif"], "name": "Image", "role": "Viewer" }]
+  }
+}
