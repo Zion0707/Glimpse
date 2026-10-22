@@ -311,6 +311,24 @@ const os = require('node:os');
             ),
             false,
         );
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await app.evaluate(({ BrowserWindow }) =>
+                BrowserWindow.getAllWindows()[0].close(),
+            );
+            await page.waitForTimeout(100);
+            assert.equal(
+                await app.evaluate(({ BrowserWindow }) =>
+                    BrowserWindow.getAllWindows()[0].isVisible(),
+                ),
+                false,
+            );
+            assert.equal(
+                await app.evaluate(({ BrowserWindow }) =>
+                    BrowserWindow.getAllWindows().length,
+                ),
+                1,
+            );
+        }
         await app.evaluate(({ app }) => app.emit('second-instance', {}, []));
         assert.equal(
             await app.evaluate(({ BrowserWindow }) =>
@@ -318,14 +336,10 @@ const os = require('node:os');
             ),
             true,
         );
-        const closed = app.waitForEvent('close');
-        await app.evaluate(({ BrowserWindow }) =>
-            BrowserWindow.getAllWindows()[0].close(),
-        );
-        await page.locator('#close-quit').click();
-        await closed;
+        await app.evaluate(({ app }) => app.quit());
+        await app.waitForEvent('close');
         console.log(
-            'PASS: logo, cancel close, tray hide, second-instance restore and direct exit',
+            'PASS: logo, cancel close, tray hide, repeat close without prompt, second-instance restore and direct exit',
         );
     } finally {
         await app.close();

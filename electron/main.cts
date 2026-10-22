@@ -18,6 +18,7 @@ let win: BrowserWindow;
 let tray: Tray | undefined;
 let quitting = false;
 let closePromptOpen = false;
+let trayCloseConfirmed = false;
 let currentFolder: string | undefined;
 let folderWatcher: FSWatcher | undefined;
 let watchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -156,6 +157,11 @@ else {
         });
         win.on('close', (event) => {
             if (quitting) return;
+            if (trayCloseConfirmed) {
+                event.preventDefault();
+                minimizeToTray();
+                return;
+            }
             event.preventDefault();
             if (closePromptOpen) return;
             closePromptOpen = true;
@@ -206,7 +212,10 @@ ipcMain.handle('refresh', () =>
 ipcMain.handle('close-choice', (_, choice) => {
     if (!closePromptOpen) return;
     closePromptOpen = false;
-    if (choice === 'tray') minimizeToTray();
+    if (choice === 'tray') {
+        trayCloseConfirmed = true;
+        minimizeToTray();
+    }
     else if (choice === 'quit') app.quit();
 });
 ipcMain.handle('trash', async (_, file) => {
