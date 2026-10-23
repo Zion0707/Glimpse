@@ -12,6 +12,7 @@ import {
 import fs from 'node:fs/promises';
 import { watch, type FSWatcher } from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 const supported = /\.(png|jpe?g|webp|gif|bmp|svg|avif|ico)$/i;
 let win: BrowserWindow;
@@ -223,6 +224,38 @@ ipcMain.handle('trash', async (_, file) => {
         throw new Error('只能删除已打开的图片');
     await shell.trashItem(file);
     allowed.delete(file);
+});
+ipcMain.handle('rename', async (_, file, requestedName) => {
+    if (typeof file !== 'string' || !allowed.has(file))
+        throw new Error('只能重命名已打开的图片');
+    if (typeof requestedName !== 'string') throw new Error('文件名无效');
+    const extension = path.extname(file);
+    const base = path.basename(file, extension);
+    const nextBase = requestedName.trim();
+    if (!nextBase || /[\\/:*?"<>|\u0000-\u001f]/.test(nextBase) || nextBase === '.' || nextBase === '..')
+        throw new Error('文件名包含无效字符');
+    if (nextBase.toLowerCase() !== base.toLowerCase() && path.extname(nextBase))
+        throw new Error('不能修改文件扩展名');
+    const destination = path.join(path.dirname(file), `${nextBase}${extension}`);
+    if (destination.toLowerCase() !== file.toLowerCase()) {
+        try {
+            await fs.access(destination);
+            throw new Error('同名文件已存在');
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+        }
+        await fs.rename(file, destination);
+    }
+    allowed.delete(file);
+    allowed.add(destination);
+    const stat = await fs.stat(destination);
+    return {
+        name: path.basename(destination),
+        path: destination,
+        url: `preview://image/${encodeURIComponent(destination)}?v=${randomUUID()}`,
+        size: stat.size,
+        modified: stat.mtimeMs,
+    };
 });
 ipcMain.handle('fullscreen', () => {
     win.setFullScreen(!win.isFullScreen());

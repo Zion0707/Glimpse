@@ -130,6 +130,16 @@ function renderList() {
         const name = document.createElement('span');
         name.className = 'name';
         name.textContent = f.name;
+        name.ondblclick = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const fileIndex = Number(row.dataset.index);
+            if (fileIndex === index) beginRename(f, fileIndex, name);
+            else {
+                select(fileIndex);
+                beginRename(f, fileIndex, name);
+            }
+        };
         const size = document.createElement('span');
         size.className = 'size';
         size.textContent = bytes(f.size);
@@ -154,6 +164,44 @@ function renderList() {
             : '打开图片，开始浏览';
         list.append(empty);
     }
+}
+
+function beginRename(file: ImageFile, fileIndex: number, label: HTMLElement) {
+    if (!window.viewer || label.querySelector('input')) return;
+    const extension = file.name.slice(file.name.lastIndexOf('.'));
+    const base = file.name.slice(0, -extension.length);
+    const input = document.createElement('input');
+    input.className = 'name-edit';
+    input.value = base;
+    input.setAttribute('aria-label', `重命名 ${file.name}，扩展名固定为 ${extension}`);
+    label.replaceChildren(input, document.createTextNode(extension));
+    input.focus();
+    input.select();
+    let finished = false;
+    const finish = async (save: boolean) => {
+        if (finished) return;
+        finished = true;
+        if (!save || input.value.trim() === base) {
+            renderList();
+            return;
+        }
+        try {
+            const updated = await window.viewer!.rename(file.path, input.value.trim());
+            files[fileIndex] = updated;
+            renderList();
+            if (index === fileIndex) select(fileIndex);
+            toast(`已重命名为 ${updated.name}`);
+        } catch (error) {
+            renderList();
+            toast(`重命名失败：${errorMessage(error)}`);
+        }
+    };
+    input.onkeydown = (event) => {
+        if (event.key === 'Enter') void finish(true);
+        if (event.key === 'Escape') void finish(false);
+        event.stopPropagation();
+    };
+    input.onblur = () => void finish(true);
 }
 
 function controls() {

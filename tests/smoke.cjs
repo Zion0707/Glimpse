@@ -28,6 +28,15 @@ const os = require('node:os');
                 '1200 × 800',
         );
         assert.equal(await page.locator('.file-row').count(), 2);
+        const initialName = await page.locator('.file-row.selected .name').textContent();
+        const renamedBase = `renamed-${Date.now()}`;
+        await page.locator('.file-row.selected .name').dblclick();
+        await page.locator('.name-edit').fill(renamedBase);
+        await page.locator('.name-edit').press('Enter');
+        await page.waitForFunction(
+            (expected) => document.querySelector('.file-row.selected .name')?.textContent === expected,
+            `${renamedBase}${path.extname(initialName)}`,
+        );
         await page.locator('.file-open').first().focus();
         await page.keyboard.press('ArrowDown');
         await page.waitForFunction(

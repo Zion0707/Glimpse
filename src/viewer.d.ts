@@ -17,6 +17,7 @@ interface ViewerAPI {
     drop(file: File): Promise<ImageCollection>;
     fullscreen(): Promise<boolean>;
     trash(file: string): Promise<void>;
+    rename(file: string, name: string): Promise<ImageFile>;
     refresh(): Promise<ImageCollection | null>;
     closeChoice(choice: 'tray' | 'quit' | 'cancel'): Promise<void>;
     onClose(callback: () => void): void;

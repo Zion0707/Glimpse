@@ -4,6 +4,7 @@ const viewer: ViewerAPI = {
     drop: (file) => ipcRenderer.invoke('drop', webUtils.getPathForFile(file)),
     fullscreen: () => ipcRenderer.invoke('fullscreen'),
     trash: (file) => ipcRenderer.invoke('trash', file),
+    rename: (file, name) => ipcRenderer.invoke('rename', file, name),
     refresh: () => ipcRenderer.invoke('refresh'),
     closeChoice: (choice) => ipcRenderer.invoke('close-choice', choice),
     onClose: (callback) => ipcRenderer.on('confirm-close', callback),
