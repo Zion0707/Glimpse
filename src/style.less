@@ -328,6 +328,8 @@ i {
 
 .file-row .name {
     display: block;
+    min-height: 18px;
+    padding: 4px 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -770,6 +772,11 @@ footer i {
     border-radius: 5px;
     color: #e2eadc;
     font-size: 12px;
+}
+
+.canvas:fullscreen #toast.fullscreen-toast {
+    z-index: 10;
+    bottom: 132px;
 }
 
 ::-webkit-scrollbar {

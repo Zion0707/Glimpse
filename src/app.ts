@@ -60,8 +60,16 @@ function bytes(n: number) {
           : `${(n / 1048576).toFixed(2)} MB`;
 }
 function toast(message: string) {
-    $('toast').textContent = message;
-    $('toast').hidden = false;
+    const toastElement = $('toast');
+    toastElement.textContent = message;
+    if (document.fullscreenElement === canvas) {
+        canvas.append(toastElement);
+        toastElement.classList.add('fullscreen-toast');
+    } else {
+        document.body.append(toastElement);
+        toastElement.classList.remove('fullscreen-toast');
+    }
+    toastElement.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => ($('toast').hidden = true), 3000);
 }
@@ -130,7 +138,8 @@ function renderList() {
         const name = document.createElement('span');
         name.className = 'name';
         name.textContent = f.name;
-        name.ondblclick = (event) => {
+        name.title = '双击重命名';
+        button.ondblclick = (event) => {
             event.preventDefault();
             event.stopPropagation();
             const fileIndex = Number(row.dataset.index);
@@ -435,6 +444,14 @@ document.addEventListener('keydown', (e) => {
     };
     if (actions[key]) {
         e.preventDefault();
+        if (document.fullscreenElement === canvas && key === 'arrowleft' && index === 0) {
+            toast('已经是第一张图片');
+            return;
+        }
+        if (document.fullscreenElement === canvas && key === 'arrowright' && index === files.length - 1) {
+            toast('已经是最后一张图片');
+            return;
+        }
         $(actions[key]).click();
     }
     if (key === '/') {
